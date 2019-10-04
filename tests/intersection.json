@@ -1,0 +1,21 @@
+{
+  "from": [0, 0],
+  "to": [1, 1],
+  "distance": 2,
+  "shortestPath": [[0, 0], [0, 1], [1, 1]],
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [[0, 0], [0, 1]]
+        }
+      },
+      {
+        "geometry": {
+          "coordinates": [[-1, 1], [0, 1], [1, 1]]
+        }
+      }
+    ]
+  }
+}
