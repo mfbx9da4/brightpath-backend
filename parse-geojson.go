@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"unsafe"
 )
 
 // Property Geojson Property
@@ -56,7 +57,7 @@ func createGraph(geojson GeoJSON) Graph {
 			prev = &node
 		}
 	}
-	fmt.Println("geojson Graph created with", len(graph.edges), "nodes and ", graph.numEdges, "edges")
+	fmt.Println("geojson Graph created with", len(graph.edges), "nodes and", graph.numEdges, "edges. Size of", unsafe.Sizeof(graph))
 	return graph
 }
 
