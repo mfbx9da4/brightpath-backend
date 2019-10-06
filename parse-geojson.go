@@ -48,15 +48,15 @@ func createGraph(geojson GeoJSON) Graph {
 		var prev *Node
 		for j := 0; j < len(feature.Geometry.Coordinates); j++ {
 			var coords = feature.Geometry.Coordinates[j]
-			node := graph.GetOrCreateNode(coords)
+			node := Node{coords[0], coords[1]}
 			if j != 0 {
 				graph.AddEdge(node, prev)
-				graph.AddEdge(prev, node)
+				graph.AddEdge(*prev, &node)
 			}
-			prev = node
+			prev = &node
 		}
 	}
-	fmt.Println("geojson Graph created with", len(graph.nodes), "nodes and ", graph.numEdges, "edges")
+	fmt.Println("geojson Graph created with", len(graph.edges), "nodes and ", graph.numEdges, "edges")
 	return graph
 }
 

@@ -44,16 +44,15 @@ func TestCreateNode(t *testing.T) {
 	var graph Graph
 	graph.Init()
 	fmt.Println("node1 := graph.GetOrCreateNode([2]float64{0, 0})")
-	node1 := graph.GetOrCreateNode([2]float64{0, 0})
-	fmt.Println("node2 := graph.GetOrCreateNode([2]float64{0, 0})")
-	node2 := graph.GetOrCreateNode([2]float64{0, 0})
-	node3 := graph.GetOrCreateNode([2]float64{1, 1})
-	graph.AddEdge(node2, node3)
-	graph.AddEdge(node3, node2)
+	node1 := Node{0, 0}
+	node2 := Node{0, 0}
+	node3 := Node{1, 1}
+	graph.AddEdge(node2, &node3)
+	graph.AddEdge(node3, &node2)
 	fmt.Println("graph.Print()")
 	graph.Print()
-	if len(graph.nodes) > 2 {
-		t.Errorf("Created too many nodes Got %v", graph.nodes)
+	if len(graph.edges) > 2 {
+		t.Errorf("Created too many nodes Got %v", graph.edges)
 	}
 	if node1 != node2 {
 		t.Errorf("Recreating nodes %v %v are not equal", node1, node2)
@@ -85,10 +84,10 @@ func TestPaths(t *testing.T) {
 		var route = graph.CalculatePath(expected.From, expected.To)
 		var path = getCoordinates(route.Path)
 		if !equal(path, expected.ShortestPath) {
-			t.Errorf("Incorrect path. Got: %v Expected: %v", path, expected.ShortestPath)
+			t.Errorf("Incorrect path. Got: %v Expected: %v -- %s", path, expected.ShortestPath, filenames[i])
 		}
 		if route.Distance != expected.Distance {
-			t.Errorf("Incorrect distance. Got: %f Want: %f", route.Distance, expected.Distance)
+			t.Errorf("Incorrect distance. Got: %f Want: %f -- %s", route.Distance, expected.Distance, filenames[i])
 		}
 	}
 

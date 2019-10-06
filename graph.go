@@ -12,46 +12,28 @@ type Node Coordinate
 
 // Graph Basic graph complete with concurrency safe lock
 type Graph struct {
-	nodes    Nodes
 	edges    Edges
 	numEdges int64
 	lock     sync.RWMutex
 }
 
-// Nodes map vals to pointers
-type Nodes map[Node]*Node
-
 // Edges maps nodes to set of other pointers to other nodes
-type Edges map[*Node]SetOfNodes
+type Edges map[Node]SetOfNodes
+
+// SetOfNodes Set of nodes
+type SetOfNodes = map[*Node]Exists
 
 // Exists null value for sets
 type Exists struct{}
 
 var exists Exists
 
-// SetOfNodes Set of nodes
-type SetOfNodes = map[*Node]Exists
-
 // Init initialize maps
 func (graph *Graph) Init() {
 	graph.lock.Lock()
-	graph.nodes = make(Nodes)
 	graph.edges = make(Edges)
 	graph.numEdges = 0
 	graph.lock.Unlock()
-}
-
-// GetOrCreateNode for create node from coords
-func (graph *Graph) GetOrCreateNode(coords Coordinate) *Node {
-	graph.lock.Lock()
-	node := Node{coords[0], coords[1]}
-	if pnode, ok := graph.nodes[node]; ok {
-		graph.lock.Unlock()
-		return pnode
-	}
-	graph.nodes[node] = &node
-	graph.lock.Unlock()
-	return &node
 }
 
 func (n *Node) String() string {
@@ -59,10 +41,13 @@ func (n *Node) String() string {
 }
 
 // AddEdge adds an edge to the graph
-func (graph *Graph) AddEdge(n1, n2 *Node) {
+func (graph *Graph) AddEdge(n1 Node, n2 *Node) {
 	graph.lock.Lock()
 	if graph.edges[n1] == nil {
 		graph.edges[n1] = make(SetOfNodes)
+	}
+	if graph.edges[*n2] == nil {
+		graph.edges[*n2] = make(SetOfNodes)
 	}
 	graph.edges[n1][n2] = exists
 	graph.numEdges++
@@ -71,9 +56,9 @@ func (graph *Graph) AddEdge(n1, n2 *Node) {
 
 func (graph *Graph) String() string {
 	s := ""
-	for _, node := range graph.nodes {
+	for node, edges := range graph.edges {
 		s += node.String() + " -> "
-		for child := range graph.edges[node] {
+		for child := range edges {
 			s += child.String() + " "
 		}
 		s += "\n"
@@ -148,23 +133,22 @@ func (s *NodeQueue) Size() int {
 }
 
 // FindNode find node from graph
-func (graph *Graph) FindNode(coords Coordinate) *Node {
-	var node = graph.nodes[Node{coords[0], coords[1]}]
-	if node == nil {
+func (graph *Graph) FindNode(coords Coordinate) Node {
+	var closest = Node{coords[0], coords[1]}
+	if graph.edges[closest] == nil {
 		var minDistance float64 = math.MaxFloat64
 		// Probably there is a better algo for this, just doing the brute force sorry :(
-		for _, cur := range graph.nodes {
-			value := cur
-			dx := coords[0] - value[0]
-			dy := coords[1] - value[1]
+		for node := range graph.edges {
+			dx := coords[0] - node[0]
+			dy := coords[1] - node[1]
 			distance := math.Sqrt(dx*dx + dy*dy)
 			if distance < minDistance {
-				node = cur
+				closest = node
 				minDistance = distance
 			}
 		}
 	}
-	return node
+	return closest
 }
 
 // Route Best route and distance of route
@@ -177,13 +161,13 @@ type Route struct {
 FindPath Uses A* routing to find shortest path
 (Keeps a min heap sorted by elapsed + remaing distance).
 */
-func (graph *Graph) FindPath(src, dest *Node) Route {
+func (graph *Graph) FindPath(src, dest Node) Route {
 	graph.lock.RLock()
 
 	// Init priority queue
 	var pqueue = make(PriorityQueue, 1)
-	var rootPath = []Node{*src}
-	var rootValue = QueueItemValue{src, rootPath, 0}
+	var rootPath = []Node{src}
+	var rootValue = QueueItemValue{&src, rootPath, 0}
 	pqueue[0] = &QueueItem{
 		Value:    &rootValue,
 		Priority: 0,
@@ -202,9 +186,8 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 		cur := pqitem.Value
 		node := cur.Node
 		visited[node] = true
-		children := graph.edges[node]
 
-		for child := range children {
+		for child := range graph.edges[*node] {
 			// TODO: Calculate in km
 			// https://stackoverflow.com/a/1253545/1376627
 			dx := (node[0] - child[0])
@@ -214,7 +197,7 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 			elapsed := math.Sqrt(dx*dx+dy*dy) + cur.Distance
 			remaining := math.Sqrt(remaingDx*remaingDx + remainingDy*remainingDy)
 
-			if *child == *dest {
+			if *child == dest {
 				path := append(cur.Path, *child)
 				return Route{path, elapsed}
 			}
