@@ -93,6 +93,7 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 var graph Graph
 
 // var filename = "./data/greater-london-latest.geojson"
+
 // var filename = "./data/central.geojson"
 var filename = "./data/cleaned.geojson"
 

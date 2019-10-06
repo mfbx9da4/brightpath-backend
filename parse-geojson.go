@@ -56,7 +56,7 @@ func createGraph(geojson GeoJSON) Graph {
 			prev = node
 		}
 	}
-	fmt.Println("geojson Graph created with", len(graph.nodes), "nodes")
+	fmt.Println("geojson Graph created with", len(graph.nodes), "nodes and ", graph.numEdges, "edges")
 	return graph
 }
 

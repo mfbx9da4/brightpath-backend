@@ -12,9 +12,10 @@ type Node Coordinate
 
 // Graph Basic graph complete with concurrency safe lock
 type Graph struct {
-	nodes Nodes
-	edges Edges
-	lock  sync.RWMutex
+	nodes    Nodes
+	edges    Edges
+	numEdges int64
+	lock     sync.RWMutex
 }
 
 // Nodes map vals to pointers
@@ -36,6 +37,7 @@ func (graph *Graph) Init() {
 	graph.lock.Lock()
 	graph.nodes = make(Nodes)
 	graph.edges = make(Edges)
+	graph.numEdges = 0
 	graph.lock.Unlock()
 }
 
@@ -63,6 +65,7 @@ func (graph *Graph) AddEdge(n1, n2 *Node) {
 		graph.edges[n1] = make(SetOfNodes)
 	}
 	graph.edges[n1][n2] = exists
+	graph.numEdges++
 	graph.lock.Unlock()
 }
 
