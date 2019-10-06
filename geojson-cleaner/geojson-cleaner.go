@@ -69,7 +69,7 @@ func main() {
 		isNotPathOrIsValidPath := !isPath || isValidPath
 		isLit := geojson.Features[i].Properties.Lit != "" || geojson.Features[i].Properties.Lit == "yes"
 		shouldInclude := isHighway && isLineString && hasSidewalk && isNotPathOrIsValidPath && isLit
-		// fmt.Println("Warning: including all nodes even though shouldInclude", shouldInclude)
+		// shouldInclude := true
 		var feature = geojson.Features[i]
 		if shouldInclude && len(feature.Geometry.Coordinates) > 0 {
 			var coord = feature.Geometry.Coordinates[0]
