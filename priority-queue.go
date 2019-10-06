@@ -55,7 +55,7 @@ func (pq *PriorityQueue) Print() {
 	fmt.Println("* Printing priority queue of length", len(pqueue))
 	for i := 0; i < len(pqueue); i++ {
 		item := pqueue[i]
-		fmt.Println(item.Value.Node.Hash, "prio, dista", item.Priority, item.Value.Distance)
+		fmt.Println(item.Value.Node, "prio, dista", item.Priority, item.Value.Distance, item.Value.Path)
 	}
 }
 

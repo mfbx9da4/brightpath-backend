@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 )
 
 // Property Geojson Property
@@ -19,13 +18,7 @@ type Property struct {
 }
 
 // Coordinate pair of lat, lng
-type Coordinate = [2]float64
-
-// HashCoordinate return coords as string
-func HashCoordinate(coords Coordinate) string {
-	var hash = strconv.FormatFloat(coords[0], 'f', -1, 64) + "," + strconv.FormatFloat(coords[1], 'f', -1, 64)
-	return hash
-}
+type Coordinate [2]float64
 
 // Geometry Geojson Geometry
 type Geometry struct {
@@ -49,6 +42,7 @@ type GeoJSON struct {
 
 func createGraph(geojson GeoJSON) Graph {
 	var graph Graph
+	graph.Init()
 	for i := 0; i < len(geojson.Features); i++ {
 		var feature = geojson.Features[i]
 		var prev *Node
@@ -56,10 +50,10 @@ func createGraph(geojson GeoJSON) Graph {
 			var coords = feature.Geometry.Coordinates[j]
 			node := graph.GetOrCreateNode(coords)
 			if j != 0 {
-				graph.AddEdge(&node, prev)
-				graph.AddEdge(prev, &node)
+				graph.AddEdge(node, prev)
+				graph.AddEdge(prev, node)
 			}
-			prev = &node
+			prev = node
 		}
 	}
 	fmt.Println("geojson Graph created with", len(graph.nodes), "nodes")

@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "test",
       "program": "${workspaceFolder}",
-      "args": ["-test.run", "TestPointers"]
+      "args": ["-test.run", "TestPaths"]
     },
     {
       "name": "Launch test package",

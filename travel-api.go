@@ -20,7 +20,7 @@ type PathRequestBody struct {
 func getCoordinates(nodes []Node) []Coordinate {
 	result := make([]Coordinate, len(nodes))
 	for i := 0; i < len(nodes); i++ {
-		result[i] = nodes[i].Value
+		result[i] = [2]float64{nodes[i][0], nodes[i][1]}
 	}
 	return result
 }

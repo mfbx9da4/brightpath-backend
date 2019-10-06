@@ -42,55 +42,29 @@ func equal(coords1 []Coordinate, coords2 []Coordinate) bool {
 
 func TestCreateNode(t *testing.T) {
 	var graph Graph
+	graph.Init()
+	fmt.Println("node1 := graph.GetOrCreateNode([2]float64{0, 0})")
 	node1 := graph.GetOrCreateNode([2]float64{0, 0})
+	fmt.Println("node2 := graph.GetOrCreateNode([2]float64{0, 0})")
 	node2 := graph.GetOrCreateNode([2]float64{0, 0})
+	node3 := graph.GetOrCreateNode([2]float64{1, 1})
+	graph.AddEdge(node2, node3)
+	graph.AddEdge(node3, node2)
+	fmt.Println("graph.Print()")
 	graph.Print()
-	if len(graph.nodes) > 1 {
+	if len(graph.nodes) > 2 {
 		t.Errorf("Created too many nodes Got %v", graph.nodes)
 	}
 	if node1 != node2 {
 		t.Errorf("Recreating nodes %v %v are not equal", node1, node2)
 	}
-	// if &node1 != &node2 {
-	// 	t.Errorf("Recreating nodes %p %p are not equal", &node1, &node2)
-	// }
+	if len(graph.edges[node2]) != 1 {
+		t.Errorf("Wrong num edges")
+	}
+	if len(graph.edges[node3]) != 1 {
+		t.Errorf("Wrong num edges")
+	}
 }
-
-// type Store map[int64]int64
-
-// func (s *Store) GetOrCreateByKey(key int64) *int64 {
-// 	store := *s
-// 	if val, ok := store[key]; ok {
-// 		fmt.Println("Found val")
-// 		return &val
-// 	}
-// 	store[key] = key
-// 	fmt.Println("Create val")
-// 	return &key
-// }
-
-// func TestPointers(t *testing.T) {
-// 	var myStore = make(Store, 0)
-// 	pval1 := myStore.GetOrCreateByKey(1) // Create a node
-// 	pval2 := myStore.GetOrCreateByKey(1) // Get it from the store
-// 	if pval1 != pval2 {
-// 		// Same val, this passes
-// 		t.Errorf("Values %v %v are not equal", pval1, pval2)
-// 	}
-// 	if &pval1 != &pval2 {
-// 		// Different pointer, this fails, expected to pass
-// 		t.Errorf("Pointers %p %p are not equal", &pval1, &pval2)
-// 	}
-// }
-
-// func TestPointers(t *testing.T) {
-// 	arr := []int{1, 2, 3}
-// 	tmp := make([]int, len(arr))
-// 	copy(tmp, arr)
-// 	path = append(cur.Path, child)
-// 	fmt.Println(tmp)
-// 	fmt.Println(arr)
-// }
 
 func TestPaths(t *testing.T) {
 	filenames := []string{
@@ -119,3 +93,67 @@ func TestPaths(t *testing.T) {
 	}
 
 }
+
+// type Vertex [2]float64
+// type GraphType struct {
+// 	vertices Vertices
+// 	edges    Edges
+// }
+// type Vertices map[Vertex]*Vertex
+// type Edges map[*Vertex]BagOfVertices
+// type BagOfVertices map[*Vertex]bool
+
+// func (graph *GraphType) Init() {
+// 	graph.vertices = make(Vertices)
+// 	graph.edges = make(Edges)
+// }
+// func (graph *GraphType) GetOrCreateVertex(vertex Vertex) *Vertex {
+// 	if val, ok := graph.vertices[vertex]; ok {
+// 		fmt.Println("Found val")
+// 		return val
+// 	}
+// 	graph.vertices[vertex] = &vertex
+// 	graph.edges[&vertex] = make(BagOfVertices)
+// 	fmt.Println("Create val")
+// 	return &vertex
+// }
+
+// func TestEdges(t *testing.T) {
+// 	var graph GraphType
+// 	graph.Init()
+// 	// Create vertex 0 and vertex 1
+// 	graph.GetOrCreateVertex(Vertex{0, 0})
+// 	graph.GetOrCreateVertex(Vertex{1, 1})
+
+// 	// Create edge from vertex 0 to vertex 1
+// 	v0 := graph.GetOrCreateVertex(Vertex{0, 0})
+// 	v1 := graph.GetOrCreateVertex(Vertex{1, 1})
+// 	graph.edges[v0][v1] = true
+
+// 	// Check edge exist from vertex 0 to vertex 1
+// 	v0 = graph.GetOrCreateVertex(Vertex{0, 0})
+// 	v1 = graph.GetOrCreateVertex(Vertex{1, 1})
+// 	if _, ok := graph.edges[v0][v1]; !ok {
+// 		t.Errorf("Edge from %v to %v does not exist", v0, v1)
+// 	}
+// }
+
+// func TestPointers2(t *testing.T) {
+// 	var edges Edges = make(map[Vertex]BagOfVertices)
+// 	var vertex1 = Vertex{0, 0}
+// 	var _vertex1 = Vertex{0, 0}
+// 	pointer1 := edges.GetOrCreateVertex(vertex1)
+// 	_pointer1 := edges.GetOrCreateVertex(_vertex1)
+// 	if vertex1 != _vertex1 {
+// 		// Pass
+// 		t.Errorf("Values %v %v are not equal", vertex1, _vertex1)
+// 	}
+// 	if *pointer1 != *_pointer1 {
+// 		// Pass
+// 		t.Errorf("Values %v %v are not equal", *pointer1, *_pointer1)
+// 	}
+// 	if pointer1 != _pointer1 {
+// 		// Fail, expect to pass
+// 		t.Errorf("Pointers %p %p are not equal", pointer1, _pointer1)
+// 	}
+// }

@@ -4,11 +4,24 @@ import (
 	"container/heap"
 	"fmt"
 	"math"
-
-	//"math"
 	"sync"
-	//"github.com/cheekybits/genny/generic"
 )
+
+// Node a single node that composes the tree
+type Node Coordinate
+
+// Graph Basic graph complete with concurrency safe lock
+type Graph struct {
+	nodes Nodes
+	edges Edges
+	lock  sync.RWMutex
+}
+
+// Nodes map vals to pointers
+type Nodes map[Node]*Node
+
+// Edges maps nodes to set of other pointers to other nodes
+type Edges map[*Node]SetOfNodes
 
 // Exists null value for sets
 type Exists struct{}
@@ -16,58 +29,40 @@ type Exists struct{}
 var exists Exists
 
 // SetOfNodes Set of nodes
-type SetOfNodes = map[Node]Exists
+type SetOfNodes = map[*Node]Exists
 
-// Graph Basic graph complete with concurrency safe lock
-type Graph struct {
-	nodes map[string]*Node
-	edges map[Node]SetOfNodes
-	lock  sync.RWMutex
-}
-
-// Node a single node that composes the tree
-type Node struct {
-	Value Coordinate
-	Hash  string
+// Init initialize maps
+func (graph *Graph) Init() {
+	graph.lock.Lock()
+	graph.nodes = make(Nodes)
+	graph.edges = make(Edges)
+	graph.lock.Unlock()
 }
 
 // GetOrCreateNode for create node from coords
-func (graph *Graph) GetOrCreateNode(coords Coordinate) Node {
-	hash := HashCoordinate(coords)
-	if node, ok := graph.nodes[hash]; ok {
-		return *node
+func (graph *Graph) GetOrCreateNode(coords Coordinate) *Node {
+	graph.lock.Lock()
+	node := Node{coords[0], coords[1]}
+	if pnode, ok := graph.nodes[node]; ok {
+		graph.lock.Unlock()
+		return pnode
 	}
-	newNode := Node{coords, hash}
-	graph.CreateNode(&newNode)
-	return newNode
+	graph.nodes[node] = &node
+	graph.lock.Unlock()
+	return &node
 }
 
 func (n *Node) String() string {
-	return fmt.Sprintf("%v", n.Value)
-}
-
-// CreateNode adds a node to the graph
-func (graph *Graph) CreateNode(n *Node) {
-	graph.lock.Lock()
-	if graph.nodes == nil {
-		graph.nodes = make(map[string]*Node)
-	}
-	graph.nodes[n.Hash] = n
-	graph.lock.Unlock()
+	return fmt.Sprintf("%v", *n)
 }
 
 // AddEdge adds an edge to the graph
 func (graph *Graph) AddEdge(n1, n2 *Node) {
 	graph.lock.Lock()
-	if graph.edges == nil {
-		graph.edges = make(map[Node]SetOfNodes)
+	if graph.edges[n1] == nil {
+		graph.edges[n1] = make(SetOfNodes)
 	}
-	if graph.edges[*n1] == nil {
-		graph.edges[*n1] = make(SetOfNodes)
-	}
-	if _, ok := graph.edges[*n1][*n2]; !ok {
-		graph.edges[*n1][*n2] = exists
-	}
+	graph.edges[n1][n2] = exists
 	graph.lock.Unlock()
 }
 
@@ -75,7 +70,7 @@ func (graph *Graph) String() string {
 	s := ""
 	for _, node := range graph.nodes {
 		s += node.String() + " -> "
-		for child := range graph.edges[*node] {
+		for child := range graph.edges[node] {
 			s += child.String() + " "
 		}
 		s += "\n"
@@ -92,7 +87,7 @@ func (graph *Graph) Print() {
 
 // QueueItemValue Best Path to node
 type QueueItemValue struct {
-	Node     Node
+	Node     *Node
 	Path     []Node
 	Distance float64
 }
@@ -151,13 +146,12 @@ func (s *NodeQueue) Size() int {
 
 // FindNode find node from graph
 func (graph *Graph) FindNode(coords Coordinate) *Node {
-	hash := HashCoordinate(coords)
-	var node = graph.nodes[hash]
+	var node = graph.nodes[Node{coords[0], coords[1]}]
 	if node == nil {
 		var minDistance float64 = math.MaxFloat64
 		// Probably there is a better algo for this, just doing the brute force sorry :(
 		for _, cur := range graph.nodes {
-			value := cur.Value
+			value := cur
 			dx := coords[0] - value[0]
 			dy := coords[1] - value[1]
 			distance := math.Sqrt(dx*dx + dy*dy)
@@ -186,7 +180,7 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 	// Init priority queue
 	var pqueue = make(PriorityQueue, 1)
 	var rootPath = []Node{*src}
-	var rootValue = QueueItemValue{*src, rootPath, 0}
+	var rootValue = QueueItemValue{src, rootPath, 0}
 	pqueue[0] = &QueueItem{
 		Value:    &rootValue,
 		Priority: 0,
@@ -195,7 +189,7 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 	heap.Init(&pqueue)
 
 	// Keep track of visited
-	visited := make(map[string]bool)
+	visited := make(map[*Node]bool)
 	for {
 		if pqueue.Len() == 0 {
 			break
@@ -204,29 +198,29 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 		pqitem := heap.Pop(&pqueue).(*QueueItem)
 		cur := pqitem.Value
 		node := cur.Node
-		visited[node.Hash] = true
+		visited[node] = true
 		children := graph.edges[node]
 
 		for child := range children {
 			// TODO: Calculate in km
 			// https://stackoverflow.com/a/1253545/1376627
-			dx := (node.Value[0] - child.Value[0])
-			dy := (node.Value[1] - child.Value[1])
-			remaingDx := (dest.Value[0] - child.Value[0])
-			remainingDy := (dest.Value[1] - child.Value[1])
+			dx := (node[0] - child[0])
+			dy := (node[1] - child[1])
+			remaingDx := (dest[0] - child[0])
+			remainingDy := (dest[1] - child[1])
 			elapsed := math.Sqrt(dx*dx+dy*dy) + cur.Distance
 			remaining := math.Sqrt(remaingDx*remaingDx + remainingDy*remainingDy)
 
-			if child == *dest {
-				path := append(cur.Path, child)
+			if *child == *dest {
+				path := append(cur.Path, *child)
 				return Route{path, elapsed}
 			}
 
-			if !visited[child.Hash] {
+			if !visited[child] {
 				// TODO: Only add to path if different gradient
 				path := make([]Node, len(cur.Path))
 				copy(path, cur.Path)
-				path = append(path, child)
+				path = append(path, *child)
 				queueItem := QueueItemValue{child, path, elapsed}
 				newItem := QueueItem{
 					Value:    &queueItem,
@@ -234,7 +228,7 @@ func (graph *Graph) FindPath(src, dest *Node) Route {
 				}
 				heap.Push(&pqueue, &newItem)
 				pqueue.update(&newItem, newItem.Value, newItem.Priority)
-				visited[child.Hash] = true
+				visited[child] = true
 			}
 		}
 	}
