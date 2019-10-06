@@ -55,10 +55,10 @@ func main() {
 	// var x1 = -0.072729
 	// var y1 = 51.494244
 
-	var x0 = -0.2362015075657382
-	var y0 = 51.55145812759912
-	var x1 = 0.04214541122192372
-	var y1 = 51.45916353545195
+	var x0 = -0.36782289147757297
+	var y0 = 51.54263503347468
+	var x1 = 0.05026614032905741
+	var y1 = 51.41472350391919
 
 	for i := 0; i < len(geojson.Features); i++ {
 		isLineString := geojson.Features[i].Geometry.Type == "LineString"
