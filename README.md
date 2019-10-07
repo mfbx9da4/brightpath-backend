@@ -65,16 +65,6 @@ Uses vuejs
 
 Accessibility & Community
 
-### The development tools used to build the project
-
-- Golang (Backend)
-
-- Vue.js (Frontend)
-
-## LightPath Backend Repo
-
-The backend is a Go project who's github is here [https://github.com/cryptoqween/we-travel-backend](https://github.com/cryptoqween/we-travel-backend)
-
 ## Design Proposal
 
 https://www.behance.net/gallery/86223243/BrightPath-Safe-route-finder
