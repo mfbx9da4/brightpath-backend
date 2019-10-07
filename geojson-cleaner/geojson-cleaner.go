@@ -50,15 +50,15 @@ func main() {
 
 	var output = GeoJson{Type: geojson.Type, Features: make([]Feature, 0)}
 
-	// var x0 = -0.158044
-	// var y0 = 51.546690
-	// var x1 = -0.072729
-	// var y1 = 51.494244
+	// var topLeftX = -0.158044
+	// var topLeftY = 51.546690
+	// var bottomRightX = -0.072729
+	// var bottomRightY = 51.494244
 
-	var x0 = -0.36782289147757297
-	var y0 = 51.54263503347468
-	var x1 = 0.05026614032905741
-	var y1 = 51.41472350391919
+	var topLeftX = -0.37096096607623963
+	var topLeftY = 51.61806539427627
+	var bottomRightX = 0.06096137589867112
+	var bottomRightY = 51.3982880896219
 
 	for i := 0; i < len(geojson.Features); i++ {
 		isLineString := geojson.Features[i].Geometry.Type == "LineString"
@@ -74,7 +74,7 @@ func main() {
 		if shouldInclude && len(feature.Geometry.Coordinates) > 0 {
 			var coord = feature.Geometry.Coordinates[0]
 			// arbitrary central area to reduce total geojson size
-			if coord[0] > x0 && coord[0] < x1 && coord[1] < y0 && coord[1] > y1 {
+			if coord[0] > topLeftX && coord[0] < bottomRightX && coord[1] < topLeftY && coord[1] > bottomRightY {
 				output.Features = append(output.Features, feature)
 			}
 		}
