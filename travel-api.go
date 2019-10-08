@@ -69,21 +69,8 @@ func findpathHandler(w http.ResponseWriter, r *http.Request) {
 	geojsonDataInJSON, _ := json.Marshal(&response)
 
 	enableCors(&w)
-	w.Write(geojsonDataInJSON)
-}
-
-func mapHandler(w http.ResponseWriter, r *http.Request) {
-	jsonFile, err := os.Open(filename)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Successfully Opened geojson")
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	fmt.Println("Successfully ReadAll geojson")
-	defer jsonFile.Close()
-	enableCors(&w)
 	setJSONHeader(&w)
-	fmt.Fprintf(w, string(byteValue))
+	w.Write(geojsonDataInJSON)
 }
 
 func homeLink(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +95,6 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
 	router.HandleFunc("/findpath", findpathHandler).Methods("POST")
-	// router.HandleFunc("/map", mapHandler).Methods("GET")
 	router.HandleFunc("/map-data/", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		setJSONHeader(&w)
@@ -117,26 +103,4 @@ func main() {
 
 	fmt.Println("Listening on http://localhost:" + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
-
-	// terminate if killed
-	// go func() {
-	//     if err := server.ListenAndServe(":8080", router); err != nil {
-	// 		// handle err
-	// 		log.Fatal(err)
-	//     }
-	// }()
-
-	// // Setting up signal capturing
-	// stop := make(chan os.Signal, 1)
-	// signal.Notify(stop, os.Interrupt)
-
-	// // Waiting for SIGINT (pkill -2)
-	// <-stop
-
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
-	// if err := server.Shutdown(ctx); err != nil {
-	//     // handle err
-	// }
-
 }
