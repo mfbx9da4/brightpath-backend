@@ -87,7 +87,7 @@ func TestPaths(t *testing.T) {
 			t.Errorf("Incorrect path. Got: %v Expected: %v -- %s", path, expected.ShortestPath, filenames[i])
 		}
 		if route.Distance != expected.Distance {
-			t.Errorf("Incorrect distance. Got: %f Want: %f -- %s", route.Distance, expected.Distance, filenames[i])
+			t.Errorf("Incorrect distance. Got: %.11f Want: %.11f -- %s", route.Distance, expected.Distance, filenames[i])
 		}
 	}
 

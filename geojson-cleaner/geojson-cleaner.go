@@ -65,10 +65,12 @@ func main() {
 		isHighway := geojson.Features[i].Properties.Highway != ""
 		hasSidewalk := geojson.Features[i].Properties.Sidewalk == "" || geojson.Features[i].Properties.Sidewalk != "none"
 		isPath := geojson.Features[i].Properties.Highway == "path"
-		isValidPath := geojson.Features[i].Properties.Highway == "path" && (geojson.Features[i].Properties.Access == "no" || geojson.Features[i].Properties.Access == "private")
-		isNotPathOrIsValidPath := !isPath || isValidPath
+		isPathWithAccess := geojson.Features[i].Properties.Highway == "path" && (geojson.Features[i].Properties.Access == "no" || geojson.Features[i].Properties.Access == "private")
+		isNotPathOrIsValidPath := !isPath || isPathWithAccess
 		isLit := geojson.Features[i].Properties.Lit != "" || geojson.Features[i].Properties.Lit == "yes"
 		shouldInclude := isHighway && isLineString && hasSidewalk && isNotPathOrIsValidPath && isLit
+		// TODO: exclude footways for cycling
+		// isFootway := geojson.Features[i].Properties.Highway == "footway"
 		// shouldInclude := true
 		var feature = geojson.Features[i]
 		if shouldInclude && len(feature.Geometry.Coordinates) > 0 {

@@ -157,6 +157,13 @@ type Route struct {
 	Distance float64
 }
 
+// calcDistance between coords in coords unit
+func calcDistance(src, dest *Node) float64 {
+	dx := src[0] - dest[0]
+	dy := src[1] - dest[1]
+	return math.Sqrt(dx*dx + dy*dy)
+}
+
 /*
 FindPath Uses A* routing to find shortest path
 (Keeps a min heap sorted by elapsed + remaing distance).
@@ -188,14 +195,8 @@ func (graph *Graph) FindPath(src, dest Node) Route {
 		visited[node] = true
 
 		for child := range graph.edges[*node] {
-			// TODO: Calculate in km
-			// https://stackoverflow.com/a/1253545/1376627
-			dx := (node[0] - child[0])
-			dy := (node[1] - child[1])
-			remaingDx := (dest[0] - child[0])
-			remainingDy := (dest[1] - child[1])
-			elapsed := math.Sqrt(dx*dx+dy*dy) + cur.Distance
-			remaining := math.Sqrt(remaingDx*remaingDx + remainingDy*remainingDy)
+			elapsed := calcDistance(node, child) + cur.Distance
+			remaining := calcDistance(child, &dest)
 
 			if *child == dest {
 				path := append(cur.Path, *child)

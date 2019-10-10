@@ -17,7 +17,7 @@ type Property struct {
 	Sidewalk string `json:"sidewalk"`
 }
 
-// Coordinate pair of lat, lng
+// Coordinate pair of lng, lat
 type Coordinate [2]float64
 
 // Geometry Geojson Geometry
